@@ -5,6 +5,7 @@
 
 using namespace std;
 
+// запрос на есм от игроков
 class ESM_Request {
 private:
     int playerId;
@@ -20,7 +21,13 @@ public:
         return this->playerId;
     };
     void printRequest(){
-        cout<<"\n игрок:"<<playerId<<"\t количество"<<ESMcount<<"\t цена"<<requestPrice;
+        cout<<"\nигрок: "<<playerId<<"\t количество "<<ESMcount<<"\t цена "<<requestPrice;
+    }
+    int getEsm(){
+        return this->ESMcount;
+    }
+    int getReqPrice(){
+        return this->requestPrice;
     }
 };
 //основной элемент игры контролирует цены и тп
@@ -47,34 +54,30 @@ public:
     }
 
      void setNextPlayer() {
-        if (this->playerId <= this->numberPlayers) {
-            this->playerId = playerId + 1;
-        } else {
-            this->playerId = 0;
+        if (playerId+1>numberPlayers){
+            playerId=1;
+        }else{
+            playerId+=1;
         }
-
     }
     int getNextPlayer(){
         return this->playerId;
     }
     void setNewRequest(int player_id, int ESMcount, int requestPrice ){
         cout<<"\nRequest Принят\n";
-        requestsESM.push_back(ESM_Request(player_id,ESMcount,requestPrice ));
-        requestsESM[0].printRequest();
-
-    }
-    void sellESM(){
-        for(int i=0;i<requestsESM.size();i++){
-            ESM_Request req = requestsESM[i];
-            if(req.getRequestPlayerId() == this->playerId){
-
-            }else{
-
-            }
+        ESM_Request newReq(player_id,ESMcount,requestPrice);
+        this->requestsESM.push_back(newReq);
+        cout<<"-----------\nin Bank successfuly request pushed-----------\n"<<this->requestsESM.size();
+        for(ESM_Request req:this->requestsESM){
+            req.printRequest();
         }
 
+       // requestsESM[0].printRequest();
     }
 
+    vector<ESM_Request> getRequestList(){
+        return this->requestsESM;
+    }
 
     void setEGP_ESM() {
         if (price_level == 1) {
@@ -109,7 +112,6 @@ public:
         }
         cout << "\n" << " min_ESM " << MIN_ESM_Price << " max_egp  " << MAX_EGP_Price << "\n";
     }
-
     int setPriceLevel() {
         //очищаем предыдыщие заявки
         requestsESM.clear();
@@ -127,10 +129,10 @@ public:
             //Назначение нового уровня цены
             for (auto p: m)
                 newlevel = p.first;
-
-            for (auto p: m)
-                std::cout << p.first << " generated " << p.second << " times\n";
-            cout << " past level = " << price_level << " newLevel = " << newlevel;
+// просто выводим что сгенериловалось ДЛЯ ДЕБАГА
+//            for (auto p: m)
+//                std::cout << p.first << " generated " << p.second << " times\n";
+//            cout << " past level = " << price_level << " newLevel = " << newlevel;
             this->price_level = newlevel;
         }
         if (oldLevel == 2) {
@@ -141,9 +143,6 @@ public:
             for (auto p: m)
                 newlevel = p.first;
 
-            for (auto p: m)
-                std::cout << p.first << " generated " << p.second << " times\n";
-            cout << " past level = " << price_level << " newLevel = " << newlevel;
             this->price_level = newlevel;
         }
         if (oldLevel == 3) {
@@ -154,9 +153,7 @@ public:
             for (auto p: m)
                 newlevel = p.first;
 
-            for (auto p: m)
-                std::cout << p.first << " generated " << p.second << " times\n";
-            cout << " past level = " << price_level << " newLevel = " << newlevel;
+
             this->price_level = newlevel;
         }
         if (oldLevel == 4) {
@@ -167,9 +164,6 @@ public:
             for (auto p: m)
                 newlevel = p.first;
 
-            for (auto p: m)
-                std::cout << p.first << " generated " << p.second << " times\n";
-            cout << "past level = " << price_level << " newLevel = " << newlevel;
             this->price_level = newlevel;
         }
         if (oldLevel == 5) {
@@ -180,9 +174,7 @@ public:
             for (auto p: m)
                 newlevel = p.first;
 
-            for (auto p: m)
-                std::cout << p.first << " generated " << p.second << " times \n";
-            cout << "past level = " << price_level << " newLevel = " << newlevel;
+
             this->price_level = newlevel;
 
         }
@@ -203,13 +195,14 @@ public:
     int getPlayerId() const {
         return playerId;
     }
-
     int getGameLength() const {
         return current_game_length;
     }
-
     int getAvailableEGP() const {
         return availableEGP;
+    }
+    void printPrimePlayer(){
+        cout<<"\n Player #"<<playerId<<" is prime, he has executive right to buy esm firstly\n";
     }
 
 };
@@ -234,7 +227,7 @@ private:
     int auto_fabric;
     int default_fabric;
     int egp;
-    int ecm;
+    int esm;
 public:
     Player(int id, string nname) {
         this->default_fabric = 2;
@@ -242,28 +235,28 @@ public:
         this->money = 10000;
         this->egp = 2;
 
-        this->ecm = 4;
+        this->esm = 4;
         this->nickname = nname;
         this->id = id;
     };  // объявляем конструктор
     int getId() const {
         return id;
     }
-
     string getNickname() {
         return nickname;
     }
-
     int getMoney() const {
         return money;
     }
-
     int getEgp() const {
         return egp;
     }
-
-    int getEcm() const {
-        return ecm;
+    int getEsm() const {
+        return esm;
+    }
+    void setEsm(int esmCount,int esmPrice){
+        this->esm+=esmCount;
+        this->money-=esmPrice*esmCount;
     }
 
     void printInfo() const {
@@ -275,19 +268,18 @@ public:
         cout<< "\nЕСМ \t ЕГП\n";
         cout<< manager.getPrice_ESM()<<"\t"<<manager.getPrice_EGP()<<endl;
         cout<<"\n доступные для продажи Еденицы Сырья и Материалов: "<< manager.getAvailableESM();
-        cout<<"\n доступные для продажи Еденицы Готовых Продуктов: "<<manager.getAvailableEGP();
+        cout<<"\n доступные для продажи Еденицы Готовых Продуктов: "<< manager.getAvailableEGP();
         cout<< "\n Введите цену(больше цены ЕСМ):\n";
         int player_price;
         cin >> player_price;
         cout<< "\n Введите количество ЕСМ:\n";
         int esm_count;
         cin >> esm_count;
-        manager.setNewRequest(this->id,player_price,esm_count);
+        manager.setNewRequest(this->id,esm_count,player_price);
 
     }
 };
 
-void setup_Game() {}
 
 int main() {
     //Русский язык
@@ -300,44 +292,49 @@ int main() {
     // длительность игры
     int GAME_LENGTH;
     // параметры клиентского игрока
-    int p_client_id = 0;
+    int p_client_id = 1;
     string p_client_nickname;
 
     vector<Player> players;
 
     cout << "----------Менеджер----------" << endl;
 
-    cout << "Введите желаемое число раундов >= 24: \n";
-    cin >> GAME_LENGTH;
-    if (GAME_LENGTH < 24 || GAME_LENGTH > 100) {
-        while (GAME_LENGTH < 24) {
-            cout << "Введите желаемое число раундов >= 24: \n";
-            cin >> GAME_LENGTH;
-            if (GAME_LENGTH >= 24) {
-                break;
-            }
-        }
-    }
+    //Проверка числа раундов
+//    cout << "Введите желаемое число раундов >= 24: \n";
+//    cin >> GAME_LENGTH;
+//    if (GAME_LENGTH < 24 || GAME_LENGTH > 100) {
+//        while (GAME_LENGTH < 24) {
+//            cout << "Введите желаемое число раундов >= 24: \n";
+//            cin >> GAME_LENGTH;
+//            if (GAME_LENGTH >= 24) {
+//                break;
+//            }
+//        }
+//    }
+    //Никнейм
     cout << "\nВведите ваш никнейм:\n ";
     cin >> p_client_nickname;
+    // создаем первого игрока(предполагается что клиент будет играть за него
     Player client(p_client_id, p_client_nickname);
-    //СОздание ботов
+
     players.emplace_back(client);
+    //СОздание других
     const int BOT_COUNT = 2;
     for (int i = 0; i < BOT_COUNT; i++) {
-        string arr[BOT_COUNT] = {"Морти", "Рик"};
-        players.emplace_back(Player(i + 1, arr[i]));
+        string arr[BOT_COUNT] = {"Морти","Рик"};
+        players.emplace_back(Player(i + 2, arr[i]));
     }
-    for (int i = 0; i < players.size(); i++) {
-        players[i].printInfo();
-    }
+//    for (int i = 0; i < players.size(); i++) {
+//        players[i].printInfo();
+//    }
     //cout<<"\n\n players.size() ="<<players.size()<<"\n\n";
 
 
     //НАШ ВЛАДЫКА
-    Bank Manager(GAME_LENGTH, players.size() - 1);
+    Bank Manager(GAME_LENGTH, players.size());
 
-    for (int i = 0; i <= 2; i++) {
+
+    for (int i = 0; i < 4; i++) {
         cout<<"\n\n\n\n\n";
 
         Manager.setPriceLevel();
@@ -346,17 +343,84 @@ int main() {
         int MIN_esmPrice = Manager.getPrice_ESM();
 
 
-        int primePlayer = Manager.getNextPlayer();
+        int primePlayer = Manager.getPlayerId();
         Manager.getPrice_Level();
+        cout<<"\n primme player: "<<primePlayer<<"\n";
+        Manager.printPrimePlayer();
+        vector<ESM_Request> requestList;
         for (int j = 0; j < players.size(); j++) {
+
             Player p = players[j];
             cout<<"\n\n\n\n\n";
+            Manager.printPrimePlayer();
             cout << "Сейчас ход игрока №" << p.getId() << " " << p.getNickname();
             p.printInfo();
-            p.makeRequest(Manager);
-            // продаем ESM
-            //Manager.sellESM();
+           // p.makeRequest(Manager);
+
+            //Создаем новый запрос и помещаем его в список запросов
+            cout<< "\n"<<"Введите вашу цену покупки ЕСМ для производсва ЕГП"<<endl;
+            cout<< "\nЕСМ \t ЕГП\n";
+            cout<< Manager.getPrice_ESM()<<"\t"<<Manager.getPrice_EGP()<<endl;
+            cout<<"\n доступные для продажи Еденицы Сырья и Материалов: "<< Manager.getAvailableESM();
+            cout<<"\n доступные для продажи Еденицы Готовых Продуктов: "<< Manager.getAvailableEGP();
+            cout<< "\n Введите цену(больше цены ЕСМ):\n";
+            int player_price;
+            cin >> player_price;
+            cout<< "\n Введите количество ЕСМ:\n";
+            int esm_count;
+            cin >> esm_count;
+
+            ESM_Request newRequest = ESM_Request(p.getId(),esm_count,player_price);
+            // добавляем запрос в список
+            requestList.push_back(newRequest);
+            // печатаем
+//            for (ESM_Request req:requestList) {
+//                req.printRequest();
+//            }
+
+
         }
+
+
+        // Обрабатываем запросы на есм и егп
+        for(ESM_Request request:requestList){
+            for(ESM_Request r:requestList){
+                if (Manager.getPlayerId()==r.getRequestPlayerId()){
+                   // cout<< "\nprime до:";
+                    players[Manager.getPlayerId()-1].printInfo();
+                    players[Manager.getPlayerId()-1].setEsm(r.getEsm(),r.getReqPrice());
+                   // cout<< "\nprime после:";
+                    players[Manager.getPlayerId()-1].printInfo();
+                   // cout<<"\nprime игрок получил свои есм\n";
+                    auto iter = requestList.cbegin(); // указатель на первый элемент
+                    if (Manager.getPlayerId()==1){
+                        requestList.erase(iter);
+                    }else{
+                        requestList.erase(iter + Manager.getPlayerId()-1);
+                    }
+                }
+                break;
+            }
+            // cout<<"\nПосле prime\n";
+            for(ESM_Request r:requestList){
+
+                int idPlayerReq = r.getRequestPlayerId() - 1;
+               // cout<<"\nДО";
+               // players[idPlayerReq].printInfo();
+
+                players[idPlayerReq].setEsm(r.getEsm(),r.getReqPrice());
+               // cout<<"\nПосле";
+               // players[idPlayerReq].printInfo();
+               // cout<<"\nВсе реквесты\n";
+              //  r.printRequest();
+            }
+            break;
+        }
+
+
+    //Конец месяца
+    cout<<"\nКонец месяца\n";
+        Manager.setNextPlayer();
 
 
     }
