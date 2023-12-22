@@ -95,8 +95,8 @@ public:
         if (price_level == 2) {
             this->MIN_ESM_Price = 650;
             this->MAX_EGP_Price = 6000;
-            this->availableESM = floor(2 * numberPlayers);
-            this->availableEGP = floor(3 * numberPlayers);
+            this->availableESM = floor(1.5 * numberPlayers);
+            this->availableEGP = floor(2.5 * numberPlayers);
         }
         if (price_level == 3) {
             this->MIN_ESM_Price = 500;
@@ -107,8 +107,8 @@ public:
         if (price_level == 4) {
             this->MIN_ESM_Price = 400;
             this->MAX_EGP_Price = 5000;
-            this->availableESM = floor(3 * numberPlayers);
-            this->availableEGP = floor(2 * numberPlayers);
+            this->availableESM = floor(2.5 * numberPlayers);
+            this->availableEGP = floor(1.5 * numberPlayers);
         }
         if (price_level == 5) {
             this->MIN_ESM_Price = 300;
@@ -149,7 +149,6 @@ public:
             //Назначение нового уровня цены
             for (auto p : m)
                 newlevel = p.first;
-
             this->price_level = newlevel;
         }
         if (oldLevel == 3) {
@@ -159,8 +158,6 @@ public:
             //Назначение нового уровня цены
             for (auto p : m)
                 newlevel = p.first;
-
-
             this->price_level = newlevel;
         }
         if (oldLevel == 4) {
@@ -180,13 +177,9 @@ public:
             //Назначение нового уровня цены
             for (auto p : m)
                 newlevel = p.first;
-
-
             this->price_level = newlevel;
-
         }
         setEGP_ESM();
-
     }
     void sellESM(int toSellESM) {
         if (this->availableESM - toSellESM >= 0) {
@@ -194,8 +187,8 @@ public:
         }
     }
     void sellEGP(int toSellEGP) {
-        if (this->availableESM - toSellEGP >= 0) {
-            this->availableESM -= toSellEGP;
+        if (this->availableEGP - toSellEGP >= 0) {
+            this->availableEGP -= toSellEGP;
         }
     };
 
@@ -247,6 +240,7 @@ private:
     int default_fabric;
     int egp;
     int esm;
+    bool isBancrupt;
 public:
     Player(int id, string nname) {
         this->default_fabric = 2;
@@ -277,6 +271,12 @@ public:
     int getEsm() const {
         return esm;
     }
+    int getDefaultFabrics() {
+        return default_fabric;
+    }
+    int getAutoFabrics() {
+        return auto_fabric;
+    }
 
     void setEsm(int esmCount, int esmPrice) {
         this->esm += esmCount;
@@ -286,55 +286,99 @@ public:
         this->egp -= egpCount;
         this->money += egpCount * egpPrice;
     }
+    bool IfBankrupt() {
+        if (this->money < 0) {
+            this->isBancrupt = true;
+            return true;
+        }
+        else {
+            return false;
+        }
 
-    void printInfo() const {
+    }
+    int getTaxAmount() {
+        return 300 * getEsm() + 500 * getEgp() + 1000 * getDefaultFabrics() + 1000 * getAutoFabrics();
+    }
+
+    void printInfo() {
+
         cout << "\n---------\n" << nickname
-             << " номер-" << id
-             << "\nденег: " << money << "$"
-             <<"\nЕСМ:"<<this->esm<<" ЕГП:"<< this->egp
-             << "\nфабрики автоматизированные:"<< auto_fabric
-             << "\nфабрики обычные: " << default_fabric
-             << "\n---------\n";
+             << " Номер-" << id
+             << "\nДенег: " << money << "$"
+             << "\nЕСМ:" << this->esm << " ЕГП:" << this->egp
+             << "\nФабрики автоматизированные:" << auto_fabric
+             << "\nФабрики обычные: " << default_fabric
+             << "\n\n НАЛОГИ В КОНЦЕ МЕСЯЦА ПРЕДПОЛАГАЕМЫЕ:" << getTaxAmount()
+             << "\n---------\n"
+             <<"\nНалог ЕСМ: 300$"<<"\tЕГП: 500$"<< "\nОбычная Фабрика: 1000$\tАвто Фабрика 1500$\n";
+
     }
 
 
     Request buyESM(Bank Manager) {
+
         system("cls");
-        this->printInfo();
-        cout << "\n\nЗапрос на ЕСМ\n\n";
-        cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от "<<Manager.getPrice_ESM();
-        cout << "\n доступные ЕГП для продажи банку: " << Manager.getAvailableEGP() << " шт. до " << Manager.getPrice_EGP();
-        cout << "\n Введите цену (больше "<< Manager.getPrice_ESM()<<"):";
-        int player_esm_price;
-        // цена есм
-        cin >> player_esm_price;
-        if (player_esm_price < Manager.getPrice_ESM()) {
-            while (player_esm_price < Manager.getPrice_ESM()) {
-                cout << "\nЕще раз введите цену ЕСМ:\n";
-                cin >> player_esm_price;
-                if (player_esm_price >= Manager.getPrice_ESM()) {
-                    break;
+        int FLAG=1;
+        while (FLAG!=0)
+        {
+
+            this->printInfo();
+            cout << "\n\nЗапрос на ЕСМ\n\n";
+            cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от " << Manager.getPrice_ESM();
+            cout << "\n доступные ЕГП для продажи банку: " << Manager.getAvailableEGP() << " шт. до " << Manager.getPrice_EGP();
+            cout << "\n Введите цену (больше " << Manager.getPrice_ESM() << "):";
+            int player_esm_price;
+            // цена есм
+            cin >> player_esm_price;
+            if (player_esm_price < Manager.getPrice_ESM()) {
+                while (player_esm_price < Manager.getPrice_ESM()) {
+                    cout << "\nЕще раз введите цену ЕСМ:\n";
+                    cin >> player_esm_price;
+                    if (player_esm_price >= Manager.getPrice_ESM()) {
+                        break;
+                    }
                 }
             }
-        }
-        // количество есм
-        cout << "\n Введите количество ЕСМ: ";
-        int player_esm_count;
-        cin >> player_esm_count;
-        if (player_esm_count > Manager.getAvailableESM()) {
-            while (player_esm_count > Manager.getAvailableESM()) {
-                cout << "\n Введите количество ЕСМ:\n";
-                cin >> player_esm_count;
-                if (player_esm_count <= Manager.getAvailableESM()) {
-                    break;
+            // количество есм
+            cout << "\n Введите количество ЕСМ: ";
+            int player_esm_count;
+            cin >> player_esm_count;
+            if (player_esm_count > Manager.getAvailableESM()) {
+                while (player_esm_count > Manager.getAvailableESM()) {
+                    cout << "\n Введите количество ЕСМ:\n";
+                    cin >> player_esm_count;
+                    if (player_esm_count <= Manager.getAvailableESM()) {
+                        break;
+                    }
                 }
             }
+            if ((this->money - (player_esm_count*player_esm_price))<0)
+            {
+                cout << "\n---------\nне хватает денег\n-----------\n";
+                continue;
+            }
+            else {
+                cout << "\nС вашего счета спишется " << player_esm_price * player_esm_count << " \n";
+                cout << "\nВведите 0 для подтверждения\n";
+                cin >> FLAG;
+                if (FLAG == 0)
+                {
+                    Request ESMnewRequest = Request(this->id, player_esm_count, player_esm_price);
+                    // добавляем запрос в список
+
+                    return ESMnewRequest;
+                }
+                else {
+                    continue;
+                }
+            }
+
         }
 
-        Request ESMnewRequest = Request(this->id, player_esm_count, player_esm_price);
-        // добавляем запрос в список
 
-        return ESMnewRequest;
+
+
+
     }
     Request sellEGP(Bank Manager) {
         system("cls");
@@ -381,6 +425,18 @@ public:
 
 
     }
+    void payTaxes() {
+        int taxAmount=0;
+        if (!IfBankrupt()) {
+            taxAmount = 300 * getEsm() + 500 * getEgp()+ 1000 * getDefaultFabrics()+ 1000 * getAutoFabrics();
+            this->money -= taxAmount;
+        }
+        else {
+            cout << "БАНКРОТТТТТТ";
+        }
+        cout << taxAmount<<"$\n";
+
+    }
 };
 
 
@@ -396,7 +452,7 @@ int main() {
     int GAME_LENGTH;
     // параметры клиентского игрока
     int p_client_id = 1;
-    string p_client_nickname;
+    string p_client_nickname="| Main Corp. |";
 
     vector<Player> players;
 
@@ -413,17 +469,14 @@ int main() {
             }
         }
     }
-    //Никнейм
-    cout << "\nВведите ваш никнейм:\n ";
-    cin >> p_client_nickname;
-    // создаем первого игрока(предполагается что клиент будет играть за него
+
     Player client(p_client_id, p_client_nickname);
 
     players.emplace_back(client);
     //СОздание других
     const int BOT_COUNT = 2;
     for (int i = 0; i < BOT_COUNT; i++) {
-        string arr[BOT_COUNT] = { "Морти", "Рик" };
+        string arr[BOT_COUNT] = { "Арасака Индастриз", "Флоатинг Технолоджи" };
         players.emplace_back(Player(i + 2, arr[i]));
     }
     //    for (int i = 0; i < players.size(); i++) {
@@ -441,7 +494,21 @@ int main() {
         Manager.getPrice_Level();
         vector<Request> esmRequestList;
         vector<Request> egpRequestList;
+
+
         for (int j = 0; j < players.size(); j++) {
+            //Проверка не банкрот ли игрок
+            for (Player player : players) {
+                if (player.IfBankrupt()) {
+                    auto iter = players.cbegin();
+                    if (Manager.getPlayerId() == 1) {
+                        players.erase(iter);
+                    }
+                    else {
+                        players.erase(iter + Manager.getPlayerId() - 1);
+                    }
+                }
+            }
             system("cls");
             //текущий игрок
             Player p = players[j];
@@ -461,14 +528,20 @@ int main() {
         //Старший игрок покупает ЕСМ
         for (Request rESM : esmRequestList) {
             if (Manager.getPlayerId() == rESM.getRequestPlayerId()) {
-                // cout<< "\nprime до:";
-                //players[Manager.getPlayerId() - 1].printInfo();
-                players[Manager.getPlayerId() - 1].setEsm(rESM.getCount(), rESM.getReqPrice());
-                // cout<< "\nprime после:";
-                players[Manager.getPlayerId() - 1].printInfo();
-                //новое количество у менеджера
-                Manager.sellESM(rESM.getCount());
 
+                if (Manager.getAvailableESM() > rESM.getCount())
+                {
+                    players[Manager.getPlayerId() - 1].setEsm(rESM.getCount(), rESM.getReqPrice());
+                    // cout<< "\nprime после:";
+                    players[Manager.getPlayerId() - 1].printInfo();
+                    //новое количество у менеджера
+                    Manager.sellESM(rESM.getCount());
+
+                }
+                else {
+                    Manager.sellESM(Manager.getAvailableESM());
+                    players[Manager.getPlayerId() - 1].setEGP(Manager.getAvailableESM(), rESM.getReqPrice());
+                }
                 //убираем из очереди старшего игрока
                 auto iter = esmRequestList.cbegin(); // указатель на первый элемент
                 if (Manager.getPlayerId() == 1) {
@@ -481,13 +554,23 @@ int main() {
             }
         }
         //Старший игрок продает ЕГП
-        for (Request rEGP : egpRequestList) {
+        for (Request rEGP : egpRequestList){
+
             if (Manager.getPlayerId() == rEGP.getRequestPlayerId()) {
 
-                players[Manager.getPlayerId() - 1].setEGP(rEGP.getCount(), rEGP.getReqPrice());
-                players[Manager.getPlayerId() - 1].printInfo();
-                //новое количество у менеджера
-                Manager.sellEGP(rEGP.getCount());
+                if (Manager.getAvailableEGP() > rEGP.getCount()) {
+                    players[Manager.getPlayerId() - 1].setEGP(rEGP.getCount(), rEGP.getReqPrice());
+                    players[Manager.getPlayerId() - 1].printInfo();
+                    //новое количество у менеджера
+                    Manager.sellEGP(rEGP.getCount());
+
+                }
+                else {
+                    //продаем все егп прайм игроку
+                    Manager.sellEGP(Manager.getAvailableEGP());
+                    players[Manager.getPlayerId() - 1].setEGP(Manager.getAvailableEGP(), rEGP.getReqPrice());
+
+                }
                 //убираем из очереди старшего игрока
                 auto iter = egpRequestList.cbegin(); // указатель на первый элемент
                 if (Manager.getPlayerId() == 1) {
@@ -497,11 +580,12 @@ int main() {
                     egpRequestList.erase(iter + Manager.getPlayerId() - 1);
                 }
                 break;
+
             }
         }
         cout << "\nПосле prime\n";
         //сортируем заявки ЕСМ по цене
-        for (int f = 0; f < esmRequestList.size()-1; f++) {
+        for (int f = 0; f < esmRequestList.size()-2; f++) {
             //предполагается что каждый делает какую либо заявку
             //заявки на есм
             if (esmRequestList[f].getReqPrice() < esmRequestList[f + 1].getReqPrice()) {
@@ -513,6 +597,7 @@ int main() {
                 swap(egpRequestList[f], egpRequestList[f + 1]);
                 f++;
             }
+            cout << "отсортировано";
         }
         //выводим отсортированные запросы остальных игроков
         /*cout << "\nsorted ESM\n";
@@ -529,12 +614,24 @@ int main() {
             rsf.printRequest();
         }*/
         // ЕСМ Запрос
+        cout << "ЕСМ ЗАПРОС";
         for (Request r : esmRequestList) {
+
             int idPlayerReq = r.getRequestPlayerId() - 1;
-            // cout<<"\nДО";
+            cout<<"\nECM запрос";
             // players[idPlayerReq].printInfo();
-            players[idPlayerReq].setEsm(r.getCount(), r.getReqPrice());
-            Manager.sellESM(r.getCount());
+            if (Manager.getAvailableESM() >= r.getCount())
+            {
+                players[idPlayerReq].setEsm(r.getCount(), r.getReqPrice());
+                Manager.sellESM(r.getCount());
+
+            }
+            else if (Manager.getAvailableESM() < r.getCount()) {
+                players[idPlayerReq].setEsm(Manager.getAvailableESM(), r.getReqPrice());
+                Manager.sellESM(Manager.getAvailableESM());
+                break;
+            }
+
             // Manager.sellEGP(r.getEGP());
             // cout<<"\nПосле";
             // players[idPlayerReq].printInfo();
@@ -544,17 +641,37 @@ int main() {
         for (Request r : egpRequestList) {
 
             int idPlayerReq = r.getRequestPlayerId() - 1;
-            players[idPlayerReq].setEGP(r.getCount(), r.getReqPrice());
-            Manager.sellEGP(r.getCount());
+
+            if (Manager.getAvailableEGP() >= r.getCount())
+            {
+                players[idPlayerReq].setEsm(r.getCount(), r.getReqPrice());
+                Manager.sellESM(r.getCount());
+
+            }
+            else if (Manager.getAvailableEGP() < r.getCount()) {
+                players[idPlayerReq].setEGP(Manager.getAvailableEGP(), r.getReqPrice());
+                Manager.sellEGP(Manager.getAvailableEGP());
+                break;
+            }
+
+
         }
-        for (int i = 0; i < players.size(); i++)
-        {
-            cout << "\nигроки после\n";
-            players[i].printInfo();
+        cout << "\n-----\nВ конце месяца плата налогов\n------\n";
+        for (Player p : players) {
+            p.payTaxes();
+            p.printInfo();
         }
+
+
+
+        string finish;
+        cout << "\nЗакончить месяц (нажмите enter)\n";
+        cin >> finish;
+
 
         egpRequestList.clear();
         esmRequestList.clear();
+
         cout << "\nКонец месяца\n";
         Manager.setNextPlayer();
     }
