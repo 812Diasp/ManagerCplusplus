@@ -149,7 +149,7 @@ public:
             //            for (auto p: m)
             //                std::cout << p.first << " generated " << p.second << " times\n";
             //            cout << " past level = " << price_level << " newLevel = " << newlevel;
-            this->price_level = newlevel;
+
         }
         if (oldLevel == 2) {
             discrete_distribution<> dist({ 0, 0.25, 0.3, 0.25, 0.0833, 0.0833 });
@@ -158,7 +158,7 @@ public:
             //Назначение нового уровня цены
             for (auto p : m)
                 newlevel = p.first;
-            this->price_level = newlevel;
+
         }
         if (oldLevel == 3) {
             discrete_distribution<> dist({ 0, 0.08, 0.25, 0.30, 0.25, 0.0833 });
@@ -167,7 +167,7 @@ public:
             //Назначение нового уровня цены
             for (auto p : m)
                 newlevel = p.first;
-            this->price_level = newlevel;
+
         }
         if (oldLevel == 4) {
             discrete_distribution<> dist({ 0, 0.08, 0.08, 0.25, 0.30, 0.25 });
@@ -177,7 +177,7 @@ public:
             for (auto p : m)
                 newlevel = p.first;
 
-            this->price_level = newlevel;
+
         }
         if (oldLevel == 5) {
             discrete_distribution<> dist({ 0, 0.08, 0.08, 0.16, 0.30, 0.30 });
@@ -186,8 +186,9 @@ public:
             //Назначение нового уровня цены
             for (auto p : m)
                 newlevel = p.first;
-            this->price_level = newlevel;
+
         }
+        this->price_level = newlevel;
         setEGP_ESM();
     }
 
@@ -262,7 +263,7 @@ private:
 public:
     Player(int id, string nname) {
         this->default_fabric = 2;
-        this->auto_fabric = 0;
+        this->auto_fabric = 1;
         this->money = 10000;
         this->egp = 2;
         this->esm = 4;
@@ -319,24 +320,24 @@ public:
     }
 
     int getTaxAmount() {
-        return abs(300 * getEsm() + 500 * getEgp() + 1000 * getDefaultFabrics() + 1000 * getAutoFabrics());
+        return abs(300 * getEsm() + 500 * getEgp() + 1000 * getDefaultFabrics() + 1500 * getAutoFabrics());
     }
 
     void printInfo() {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         cout << "\n------------------\n" << nickname
-            << " Номер-" << id;
-         SetConsoleTextAttribute(hConsole, 10);
-         cout << "\n\nДенег: " << money << "$";
-         SetConsoleTextAttribute(hConsole, 14);
-           cout << "\nЕСМ:" << this->esm << " ЕГП:" << this->egp
-            << "\nФабрики автоматизированные:" << auto_fabric
-            << "\nФабрики обычные: " << default_fabric
+             << " Номер-" << id;
+        SetConsoleTextAttribute(hConsole, 10);
+        cout << "\n\nДенег: " << money << "$";
+        SetConsoleTextAttribute(hConsole, 14);
+        cout << "\nЕСМ:" << this->esm << " ЕГП:" << this->egp
+             << "\nФабрики автоматизированные:" << auto_fabric
+             << "\nФабрики обычные: " << default_fabric
 
-            << "\n---------\nНалог ЕСМ:300$" << "\tЕГП:500$" << "\nОбычная Фабрика:1000$\tАвто Фабрика:1500$\n---------\n"
-            << "\nНАЛОГИ В КОНЦЕ МЕСЯЦА ПРЕДПОЛАГАЕМЫЕ:"<< getTaxAmount()<<"$"
-            << "\n------------------\n";
-           SetConsoleTextAttribute(hConsole,11);
+             << "\n---------\nНалоги\nЕСМ:300$" << "\tЕГП:500$" << "\nОбычная Фабрика:1000$\tАвто Фабрика:1500$\n---------\n"
+             << "\nНАЛОГИ В КОНЦЕ МЕСЯЦА ПРЕДПОЛАГАЕМЫЕ:" << getTaxAmount() << "$"
+             << "\n------------------\n";
+        SetConsoleTextAttribute(hConsole, 11);
 
     }
 
@@ -347,21 +348,22 @@ public:
         this->printInfo();
         cout << "\n\nЗапрос на ЕСМ\n\n";
         cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от "
-            << Manager.getPrice_ESM();
+             << Manager.getPrice_ESM();
         cout << "\n доступные ЕГП для продажи банку: " << Manager.getAvailableEGP() << " шт. до "
-            << Manager.getPrice_EGP();
+             << Manager.getPrice_EGP();
 
         int player_esm_price;
         int player_esm_count;
 
         cout << "\n Введите цену (больше " << Manager.getPrice_ESM() << "):";
         cin >> player_esm_price;
+
         cout << "\nВведите количество:";
         cin >> player_esm_count;
-        cout << "\nС вашего счета спишется " << player_esm_price * player_esm_count << " \n";
+        cout << "\nС вашего счета спишется " << player_esm_price * player_esm_count << "$ \n";
         cout << "\nВведите 0 для подтверждения\n";
         cin >> FLAG;
-        if (FLAG==0)
+        if (FLAG == 0)
         {
             Request ESMnewRequest = Request(this->id, player_esm_count, player_esm_price);
             // добавляем запрос в список
@@ -382,16 +384,16 @@ public:
         int player_egp_price, player_egp_count;
         cout << "\n\nЗапрос на ЕГП\n\n";
         cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от "
-            << Manager.getPrice_ESM();
+             << Manager.getPrice_ESM();
         cout << "\n доступные ЕГП для продажи банку: " << Manager.getAvailableEGP() << " шт. до "
-            << Manager.getPrice_EGP();
+             << Manager.getPrice_EGP();
 
         cout << "\n Введите цену (меньше " << Manager.getPrice_EGP() << "):";
         cin >> player_egp_price;
         cout << "\n Введите количество ЕГП" << endl;
         cin >> player_egp_count;
 
-        cout << "\nС вашего счета спишется " << player_egp_price * player_egp_count << " \n";
+        cout << "\nПри продаже на ваш счет может поступить " << player_egp_price * player_egp_count << "$ \n";
         cout << "\nВведите 0 для подтверждения\n";
         cin >> FLAG;
         if (FLAG == 0)
@@ -412,6 +414,71 @@ public:
         taxAmount = getTaxAmount();
         money = money - taxAmount;
         cout << taxAmount << "$\n";
+
+    }
+
+    void produceEGP() {
+        system("cls");
+        int esmCount = 0;
+        int defFabCost = 2000;
+        int autoFabCost = 3000;
+        // для подтверждений
+        int confirm;
+        this->printInfo();
+        cout << "Введите желаемое количество ЕСМ для переработки в ЕГП:";
+        cin >> esmCount;
+        if (esmCount!=0)
+        {
+            // если есм четное и есть авто фабрики
+            if ((esmCount % 2 == 0) && (this->getAutoFabrics() >= 1 )) {
+                int playerAutoFabs = this->getAutoFabrics();
+
+                cout << "На " << playerAutoFabs << " авто-фабриках вы можете произвести только " << playerAutoFabs * 2 << " ЕГП из " << playerAutoFabs * 2 << " ЕСМ";
+                cout << "\nПереработать " << playerAutoFabs * 2 << " шт. ЕСМ? за " << playerAutoFabs * autoFabCost << "$\nНажмите 0 для подтверждения и 1 для отказа: ";
+                cin >> confirm;
+                if (confirm == 0)
+                {
+                    this->money -= playerAutoFabs * autoFabCost;
+                    this->esm -= playerAutoFabs * 2;
+                    this->egp += playerAutoFabs * 2;
+                }
+
+            }
+                //обычный случай
+            else if (esmCount <= this->getEsm()) {
+                int playerDefFabs = this->getDefaultFabrics();
+                if (esmCount > playerDefFabs)
+                {
+                    cout << "\nНа " << playerDefFabs << " обычных-фабриках вы можете произвести только " << playerDefFabs << " ЕГП из " << playerDefFabs << " ЕСМ";
+
+                    cout << "\nПереработать " << playerDefFabs << " шт. ЕСМ? за " << playerDefFabs* defFabCost << "$\nНажмите 0 для подтверждения и 1 для отказа: ";
+                    cin >> confirm;
+                    if (confirm == 0) {
+                        this->money -= playerDefFabs * defFabCost;
+                        this->egp += playerDefFabs;
+                        this->esm -= playerDefFabs;
+                    }
+                }
+                else {
+                    cout << "\nНа " << playerDefFabs << " обычных-фабриках вы можете произвести " << esmCount << " ЕГП из " << esmCount << " ЕСМ";
+                    cout << "\nПереработать " << esmCount << " шт. ЕСМ? за " << esmCount * defFabCost << "$\nНажмите 0 для подтверждения и 1 для отказа: ";
+                    cin >> confirm;
+                    if (confirm == 0) {
+                        this->money -= esmCount * defFabCost;
+                        this->egp += esmCount;
+                        this->esm -= esmCount;
+                    }
+                }
+
+
+            }
+            else {
+                cout << "\nВы ничего не произведете\n";
+                cout << "Введите 1 и нажмите Enter:";
+                cin >> confirm;
+            }
+        }
+
 
     }
 };
@@ -472,7 +539,7 @@ int main() {
     for (int i = 0; i < GAME_LENGTH; i++) {
         for (Player player : players) {
             //Проверка не банкрот ли игрок
-            if (player.getMoney()<0) {
+            if (player.getMoney() < 0) {
                 auto iter = players.cbegin();
                 players.erase(iter + Manager.getPlayerId());
             }
@@ -496,6 +563,7 @@ int main() {
             //Создаем новый запрос и помещаем его в список запросов
             p.printInfo();
             esmRequestList.push_back(p.buyESM(Manager));
+            p.produceEGP();
             egpRequestList.push_back(p.sellEGP(Manager));
 
         }
@@ -521,8 +589,6 @@ int main() {
         // ЕСМ Запрос
         cout << "ЕСМ ЗАПРОС";
         for (Request r : esmRequestList) {
-
-
             int idPlayerReq = r.getRequestPlayerId();
 
             cout << "\nECM запрос";
@@ -530,11 +596,9 @@ int main() {
             if (Manager.getAvailableESM() >= r.getCount()) {
                 players[idPlayerReq].setEsm(r.getCount(), r.getReqPrice());
                 Manager.sellESM(r.getCount());
-
             }
-
-
         }
+
         // ЕГП Запрос
         for (Request r : egpRequestList) {
 
@@ -543,6 +607,11 @@ int main() {
             if (Manager.getAvailableEGP() >= r.getCount()) {
                 players[idPlayerReq].setEGP(r.getCount(), r.getReqPrice());
                 Manager.sellEGP(r.getCount());
+            }
+            else {
+                players[idPlayerReq].setEGP(Manager.getAvailableEGP(), r.getReqPrice());
+                Manager.sellEGP(Manager.getAvailableEGP());
+                break;
             }
         }
 
