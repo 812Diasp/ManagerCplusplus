@@ -45,6 +45,7 @@ private:
     int playerId;
     int numberPlayers;
     int current_game_length;
+    int currentRound;
 
     int MIN_ESM_Price;
     int MAX_EGP_Price;
@@ -57,8 +58,16 @@ public:
         this->current_game_length = game_length;
         this->playerId = 0;
         this->numberPlayers = numberOfPlayers;
+        this->currentRound = 1;
         //default
         this->price_level = 3;
+    }
+
+    void updateRound() {
+        currentRound = currentRound + 1;
+    }
+    int getRound() {
+        return currentRound;
     }
 
     void setNextPlayer() {
@@ -238,17 +247,35 @@ public:
 
 };
 
-//class Fabric {
-//private:
-//    int playerId;
-//    string FabricType;
-//    int fabricId;
-//    int costOfRecycleESM;
-//public:
-//    Fabric(int playerId, string FabricType) {
-//    }
-//};
+class Loan {
+public:
+    int playerId;
+    int money;
+    int deadline;
 
+    // Конструктор класса
+    Loan(int playerId, int money, int deadline) {
+        this->playerId = playerId;
+        this->money = money;
+        this->deadline = deadline;
+    }
+    int getId() {
+        return playerId;
+    }
+    int getMoney() {
+        return money;
+    }
+    int getDeadline() {
+        return deadline;
+    }
+    void print() {
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(hConsole, 4);
+        cout << "\nID: "<<playerId<<" " << money << "$ Срок:" << deadline;
+    }
+
+    // Дополнительные методы и функции класса Loan могут быть добавлены здесь
+};
 
 class Player {
 private:
@@ -260,7 +287,10 @@ private:
     int egp;
     int esm;
     bool isBancrupt;
+    vector <Loan> loans;
+
 public:
+
     Player(int id, string nname) {
         this->default_fabric = 2;
         this->auto_fabric = 1;
@@ -269,7 +299,10 @@ public:
         this->esm = 4;
         this->nickname = nname;
         this->id = id;
-    };  // объявляем конструктор
+        //инициализация вектора (БЕЗ ЭТОГО НЕ РАБОТАЕТ)
+        this->loans.push_back(Loan(id,100,0));
+        this->loans.clear();
+    };
     int getId() const {
         return id;
     }
@@ -297,12 +330,12 @@ public:
     int getAutoFabrics() {
         return auto_fabric;
     }
-
+    /*купили есм потратили деньги*/
     void setEsm(int esmCount, int esmPrice) {
         this->esm += esmCount;
         this->money -= esmPrice * esmCount;
     }
-
+    // проали егп получили деньги
     void setEGP(int egpCount, int egpPrice) {
         this->egp -= egpCount;
         this->money += egpCount * egpPrice;
@@ -323,34 +356,62 @@ public:
         return abs(300 * getEsm() + 500 * getEgp() + 1000 * getDefaultFabrics() + 1500 * getAutoFabrics());
     }
 
+    int getTotalCapital(Bank Manager) {
+        int capital =
+            Manager.getPrice_ESM() * this->esm
+            + Manager.getPrice_EGP() * this->egp
+            + this->money
+            + getAutoFabrics() * 10000
+            + getDefaultFabrics() * 5000;
+        return capital;
+    }
+   //Для вычисления примерного капитала без использования текущих данных ЕСМ И ЕГП
+    int getExampleCapital() {
+        // Среднее значение
+        // ЕГП = 5500  ЕСМ=530
+        int capital =getEsm()*530
+            + getEgp()*5500
+            + this->money
+            + getAutoFabrics() * 10000
+            + getDefaultFabrics() * 5500;
+        return capital;
+    }
+
     void printInfo() {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         cout << "\n------------------\n" << nickname
-             << " Номер-" << id;
+            << " Номер-" << id;
         SetConsoleTextAttribute(hConsole, 10);
         cout << "\n\nДенег: " << money << "$";
         SetConsoleTextAttribute(hConsole, 14);
         cout << "\nЕСМ:" << this->esm << " ЕГП:" << this->egp
-             << "\nФабрики автоматизированные:" << auto_fabric
-             << "\nФабрики обычные: " << default_fabric
+            << "\nФабрики автоматизированные:" << auto_fabric
+            << "\nФабрики обычные: " << default_fabric
+            << "\n---------\nНалоги\nЕСМ:300$" << "\tЕГП:500$" << "\nОбычная Фабрика:1000$\tАвто Фабрика:1500$\n---------\n"
+            << "\nНАЛОГИ В КОНЦЕ МЕСЯЦА ПРЕДПОЛАГАЕМЫЕ:" << getTaxAmount() << "$"
+            << "\n------------------\n";
 
-             << "\n---------\nНалоги\nЕСМ:300$" << "\tЕГП:500$" << "\nОбычная Фабрика:1000$\tАвто Фабрика:1500$\n---------\n"
-             << "\nНАЛОГИ В КОНЦЕ МЕСЯЦА ПРЕДПОЛАГАЕМЫЕ:" << getTaxAmount() << "$"
-             << "\n------------------\n";
+        cout << "\nНепогашенные ссуды:"<< this->loans.size()<<endl;
+
+        for (int i = 0; i < loans.size(); i++) {
+            this->loans[i].print();
+        }
+
+
         SetConsoleTextAttribute(hConsole, 11);
 
     }
 
 
     Request buyESM(Bank Manager) {
-        int FLAG = 1;
+        char FLAG = '1';
         system("cls");
         this->printInfo();
         cout << "\n\nЗапрос на ЕСМ\n\n";
         cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от "
-             << Manager.getPrice_ESM();
+            << Manager.getPrice_ESM();
         cout << "\n доступные ЕГП для продажи банку: " << Manager.getAvailableEGP() << " шт. до "
-             << Manager.getPrice_EGP();
+            << Manager.getPrice_EGP();
 
         int player_esm_price;
         int player_esm_count;
@@ -363,7 +424,7 @@ public:
         cout << "\nС вашего счета спишется " << player_esm_price * player_esm_count << "$ \n";
         cout << "\nВведите 0 для подтверждения\n";
         cin >> FLAG;
-        if (FLAG == 0)
+        if (FLAG == '0')
         {
             Request ESMnewRequest = Request(this->id, player_esm_count, player_esm_price);
             // добавляем запрос в список
@@ -380,33 +441,47 @@ public:
     Request sellEGP(Bank Manager) {
         system("cls");
         this->printInfo();
-        int FLAG = 1;
+        char FLAG = '1';
         int player_egp_price, player_egp_count;
         cout << "\n\nЗапрос на ЕГП\n\n";
         cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от "
-             << Manager.getPrice_ESM();
+            << Manager.getPrice_ESM();
         cout << "\n доступные ЕГП для продажи банку: " << Manager.getAvailableEGP() << " шт. до "
-             << Manager.getPrice_EGP();
+            << Manager.getPrice_EGP();
 
         cout << "\n Введите цену (меньше " << Manager.getPrice_EGP() << "):";
         cin >> player_egp_price;
         cout << "\n Введите количество ЕГП" << endl;
         cin >> player_egp_count;
-
-        cout << "\nПри продаже на ваш счет может поступить " << player_egp_price * player_egp_count << "$ \n";
-        cout << "\nВведите 0 для подтверждения\n";
-        cin >> FLAG;
-        if (FLAG == 0)
+        if (player_egp_count<=getEgp())
         {
-            Request ESMnewRequest = Request(this->id, player_egp_count, player_egp_price);
-            // добавляем запрос в список
-            return ESMnewRequest;
+            cout << "\nПри продаже на ваш счет может поступить " << player_egp_price * player_egp_count << "$ \n";
+            cout << "\nВведите 0 для подтверждения\n";
+            cin >> FLAG;
+            if (FLAG == '0')
+            {
+                if (player_egp_count > this->getEgp())
+                {
+                    Request ESMnewRequest = Request(this->id, 0, 0);
+                    return ESMnewRequest;
+                }
+                else {
+                    Request ESMnewRequest = Request(this->id, player_egp_count, player_egp_price);
+                    // добавляем запрос в список
+                    return ESMnewRequest;
+                }
+
+            }
+            //если ввел другое
+            else {
+                // пустой
+                Request ESMnewRequest = Request(this->id, 0, 0);
+                return ESMnewRequest;
+            }
         }
-        else {
-            // пустой
-            Request ESMnewRequest = Request(this->id, 0, 0);
-            return ESMnewRequest;
-        }
+
+
+
     }
 
     void payTaxes() {
@@ -425,7 +500,7 @@ public:
         // для подтверждений
         int confirm;
         this->printInfo();
-        cout << "Введите желаемое количество ЕСМ для переработки в ЕГП:";
+        cout << "\nВведите желаемое количество ЕСМ для переработки в ЕГП:";
         cin >> esmCount;
         if (esmCount!=0)
         {
@@ -444,7 +519,7 @@ public:
                 }
 
             }
-                //обычный случай
+            //обычный случай
             else if (esmCount <= this->getEsm()) {
                 int playerDefFabs = this->getDefaultFabrics();
                 if (esmCount > playerDefFabs)
@@ -472,15 +547,38 @@ public:
 
 
             }
-            else {
-                cout << "\nВы ничего не произведете\n";
-                cout << "Введите 1 и нажмите Enter:";
-                cin >> confirm;
-            }
+
         }
 
 
     }
+
+    //ссуда
+    int getLoanAmount() {
+        int rez = (auto_fabric * 10000) + (default_fabric * 5000);
+        return rez;
+    }
+
+    //платим ссуды
+    void payLoanPercent() {
+        double percent;
+        double summ = 0;
+        for (Loan l : loans) {
+            summ += l.getMoney();
+        }
+        percent = summ / 100;
+        int intValue = static_cast<int>(percent);
+        //выплачиваем процент
+        money = money - percent;
+
+    }
+    void addLoan(int loanmoney, int date) {
+        Loan newLoan(id, loanmoney,date);
+        loans.push_back(newLoan);
+        money = money + loanmoney;
+    }
+
+
 };
 
 
@@ -536,7 +634,7 @@ int main() {
     // Главный менеджер игры в котором происходит все
     Bank Manager(GAME_LENGTH, players.size());
 
-    for (int i = 0; i < GAME_LENGTH; i++) {
+    for (int round = 0; round < GAME_LENGTH; round++) {
         for (Player player : players) {
             //Проверка не банкрот ли игрок
             if (player.getMoney() < 0) {
@@ -548,26 +646,45 @@ int main() {
         Manager.setPriceLevel();
         Manager.getPrice_Level();
         Manager.updatePlayerCount(players.size());
+       /* Manager.currentRound(i);*/
         vector<Request> esmRequestList;
         vector<Request> egpRequestList;
+        vector<Loan> playerLoans;
 
 
         for (int j = 0; j < players.size(); j++) {
-
-
             system("cls");
+
             //текущий игрок
             Player p = players[j];
+            esmRequestList.push_back(p.buyESM(Manager));
+            p.printInfo();
+            cout << "Взять ссуду в размере" <<p.getLoanAmount()<< "?";
+            int ch;
+            cin >> ch;
+            if (ch==0)
+            {
+                p.addLoan(p.getLoanAmount(), Manager.getRound() + 12);
+            }
+
 
             // p.makeRequest(Manager);
             //Создаем новый запрос и помещаем его в список запросов
-            p.printInfo();
-            esmRequestList.push_back(p.buyESM(Manager));
+
+
             p.produceEGP();
             egpRequestList.push_back(p.sellEGP(Manager));
 
+            p.payLoanPercent();
+            p.printInfo();
+
+            players[j] = p;
+
         }
         // Обрабатываем запросы на есм и егп
+
+
+
 
         cout << "\nПосле prime\n";
         //сортируем заявки ЕСМ по цене
@@ -585,6 +702,7 @@ int main() {
             }
             cout << "отсортировано";
         }
+
 
         // ЕСМ Запрос
         cout << "ЕСМ ЗАПРОС";
@@ -615,14 +733,17 @@ int main() {
             }
         }
 
+
+
         system("cls");
         cout << "\n-----\nВ конце месяца плата налогов\n------\n";
         for (Player p : players) {
             cout << "\n\n налоги: ";
             p.payTaxes();
-
-            cout << "\n\n";
+            // заплатить ссуды
+            cout << "\n";
             p.printInfo();
+            cout<<"\ncapital:" << p.getTotalCapital(Manager);
         }
         string finish;
         cout << "\nЗакончить месяц (нажмите enter)\n";
@@ -632,5 +753,6 @@ int main() {
 
         cout << "\nКонец месяца\n";
         Manager.setNextPlayer();
+        Manager.updateRound();
     }
 }
