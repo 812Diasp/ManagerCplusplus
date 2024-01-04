@@ -401,12 +401,16 @@ public:
         SetConsoleTextAttribute(hConsole, 11);
 
     }
+    void displayResults() {
+        cout << nickname << " " << money << "$ Капитал: " << getExampleCapital() << "$";
+    }
 
 
     Request buyESM(Bank Manager) {
         char FLAG = '1';
-        system("cls");
+
         this->printInfo();
+        cout << "\nТЕКУЩИЙ РАУНД:" << Manager.getRound();
         cout << "\n\nЗапрос на ЕСМ\n\n";
         cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от "
              << Manager.getPrice_ESM();
@@ -654,7 +658,7 @@ int main() {
     //СОздание других
     const int BOT_COUNT = 2;
     for (int i = 0; i < BOT_COUNT; i++) {
-        string arr[BOT_COUNT] = { "Арасака Индастриз", "Флоатинг Технолоджи" };
+        string arr[BOT_COUNT] = { "Фаррел Корпорейтед", "Арасака Индастриз" };
         players.emplace_back(Player(i + 1, arr[i]));
     }
     //    for (int i = 0; i < players.size(); i++) {
@@ -666,7 +670,7 @@ int main() {
     // Главный менеджер игры в котором происходит все
     Bank Manager(GAME_LENGTH, players.size());
 
-    for (int round = 0; round < GAME_LENGTH; round++) {
+    for (int round = 0; round <= GAME_LENGTH; round++) {
         for (Player player : players) {
             //Проверка не банкрот ли игрок
             if (player.getMoney() < 0) {
@@ -702,7 +706,7 @@ int main() {
             //7 берем ссудуу
             system("cls");
             p.printInfo();
-            cout << "Взять ссуду в размере" << p.getLoanAmount() << "?";
+            cout << "Взять ссуду в размере " << p.getLoanAmount() << "$?\n0 для подтверждения\n";
             int ch;
             cin >> ch;
             if (ch == 0)
@@ -710,7 +714,6 @@ int main() {
                 if (p.loanCheck()) {
                     p.addLoan(p.getLoanAmount(), Manager.getRound() + 12);
                 }
-
             }
 
             p.printInfo();
@@ -791,5 +794,25 @@ int main() {
         cout << "\nКонец месяца\n";
         Manager.setNextPlayer();
         Manager.updateRound();
+
+
+        //конец игры когда round==gameLength
+        if (round == GAME_LENGTH) {
+
+            system("cls");
+
+            SetConsoleTextAttribute(hConsole, 10);
+            cout << "РЕЗУЛЬТАТЫ ИГРЫ";
+            SetConsoleTextAttribute(hConsole, 14);
+            cout << "\nИгроки:";
+
+            for (Player p : players) {
+                cout << "\n";
+                p.displayResults();
+                cout << "\n";
+            }
+            cout << "\n\n\n\n";
+            break;
+        }
     }
 }
