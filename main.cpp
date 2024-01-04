@@ -88,16 +88,6 @@ public:
         this->numberPlayers = playersSize;
     }
 
-    void setNewRequest(int player_id, int count, int requestPrice) {
-        cout << "\nRequest Принят\n";
-        Request newReq(player_id, count, requestPrice);
-        this->requestsESM.push_back(newReq);
-        cout << "-----------\nin Bank successfuly request pushed-----------\n" << this->requestsESM.size();
-        for (Request req : this->requestsESM) {
-            req.printRequest();
-        }
-        // requestsESM[0].printRequest();
-    }
 
     vector<Request> getRequestList() {
         return this->requestsESM;
@@ -341,16 +331,7 @@ public:
         this->money += egpCount * egpPrice;
     }
 
-    bool IfBankrupt() {
-        if (this->money < 0) {
-            this->isBancrupt = true;
-            return true;
-        }
-        else {
-            return false;
-        }
 
-    }
 
     int getTaxAmount() {
         return abs(300 * getEsm() + 500 * getEgp() + 1000 * getDefaultFabrics() + 1500 * getAutoFabrics());
@@ -382,7 +363,7 @@ public:
         cout << "\n------------------\n" << nickname
              << " Номер-" << id;
         SetConsoleTextAttribute(hConsole, 10);
-        cout << "\n\nДенег: " << money << "$"<<"\nНАЛОГИ ~"<< getTaxAmount()+500<<"$\n";
+        cout << "\n\nДенег: " << money << "$" << "\nНАЛОГИ ~" << getTaxAmount() + 500 << "$\n";
         SetConsoleTextAttribute(hConsole, 14);
         cout << "\nЕСМ:" << this->esm << " ЕГП:" << this->egp
              << "\nАвто Фабрики:" << auto_fabric
@@ -595,7 +576,7 @@ public:
         }
     }
     void loanPayment(int round) {
-        for (int i = 0; i < loans.size();i++) {
+        for (int i = 0; i < loans.size(); i++) {
             Loan l = loans[i];
             if (l.getDeadline() == round) {
                 string s = "";
@@ -706,7 +687,7 @@ int main() {
             //7 берем ссудуу
             system("cls");
             p.printInfo();
-            cout << "Взять ссуду в размере " << p.getLoanAmount() << "$?\n0 для подтверждения\n";
+            cout << "Взять ссуду в размере " << p.getLoanAmount() << "$ и получить их на счет?\n0 для подтверждения\n";
             int ch;
             cin >> ch;
             if (ch == 0)
