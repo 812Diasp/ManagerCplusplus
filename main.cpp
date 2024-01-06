@@ -267,6 +267,50 @@ public:
     // Дополнительные методы и функции класса Loan могут быть добавлены здесь
 };
 
+
+
+
+class Fabric {
+public:
+
+    /// <param>
+    /// type = "Авто" или "Обычная"
+    /// </param>
+    int playerId;
+    string type;
+    int date;
+    int count;
+
+    // Конструктор класса
+    Fabric(int ownerId, string typeOfFabric,int countFab, int dateBuilding) {
+        this->playerId = ownerId;
+        this->type = typeOfFabric;
+        this->date = dateBuilding;
+        this->count = countFab;
+    }
+    int getId() {
+        return playerId;
+    }
+    string getType() {
+        return type;
+    }
+    int getCount() {
+        return count;
+    }
+    int getDate() {
+        return date;
+    }
+    void print() {
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        cout << "\nID:" << playerId << " " << type << " "<<count<<" Шт. " << date << " раунд";
+    }
+
+    // Дополнительные методы и функции класса Loan могут быть добавлены здесь
+};
+
+
+
 class Player {
 private:
     int id;
@@ -278,6 +322,7 @@ private:
     int esm;
     bool isBancrupt;
     vector <Loan> loans;
+    vector <Fabric> fabricQueue;
 
 public:
 
@@ -292,6 +337,10 @@ public:
         //инициализация вектора (БЕЗ ЭТОГО НЕ РАБОТАЕТ)
         this->loans.push_back(Loan(id, 100, 0));
         this->loans.clear();
+        //инициализация вектора (БЕЗ ЭТОГО НЕ РАБОТАЕТ)
+        this->fabricQueue.push_back(Fabric(id, "Авто",0,0));
+        this->fabricQueue.clear();
+
     };
     int getId() const {
         return id;
@@ -339,11 +388,11 @@ public:
 
     int getTotalCapital(Bank Manager) {
         int capital =
-                Manager.getPrice_ESM() * this->esm
-                + Manager.getPrice_EGP() * this->egp
-                + this->money
-                + getAutoFabrics() * 10000
-                + getDefaultFabrics() * 5000;
+            Manager.getPrice_ESM() * this->esm
+            + Manager.getPrice_EGP() * this->egp
+            + this->money
+            + getAutoFabrics() * 10000
+            + getDefaultFabrics() * 5000;
         return capital;
     }
     //Для вычисления примерного капитала без использования текущих данных ЕСМ И ЕГП
@@ -351,31 +400,36 @@ public:
         // Среднее значение
         // ЕГП = 5500  ЕСМ=530
         int capital = getEsm() * 530
-                      + getEgp() * 5500
-                      + this->money
-                      + getAutoFabrics() * 10000
-                      + getDefaultFabrics() * 5500;
+            + getEgp() * 5500
+            + this->money
+            + getAutoFabrics() * 10000
+            + getDefaultFabrics() * 5500;
         return capital;
     }
 
     void printInfo() {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        cout << "\n------------------\n" << nickname
-             << " Номер-" << id;
+        cout << "---------------------------\n" << nickname
+            << " Номер-" << id;
         SetConsoleTextAttribute(hConsole, 10);
         cout << "\n\nДенег: " << money << "$" << "\nНАЛОГИ ~" << getTaxAmount() + 500 << "$\n";
         SetConsoleTextAttribute(hConsole, 14);
         cout << "\nЕСМ:" << this->esm << " ЕГП:" << this->egp
-             << "\nАвто Фабрики:" << auto_fabric
-             << "\nОбычные Фабрики:" << default_fabric
-             << "\n\nНалоги\nЕСМ: 300$" << "\nЕГП: 500$" << "\nОб.Фабрика: 1000$\nАвто.Фабрика: 1500$\n\n"
+            << "\nАвто Фабрики:" << auto_fabric
+            << "\nОбычные Фабрики:" << default_fabric
+            << "\n\nНалоги\nЕСМ: 300$" << "\nЕГП: 500$" << "\nОб.Фабрика: 1000$\nАвто.Фабрика: 1500$\n\n"
 
-             << "------------------\n";
+            << "---------------------------\n";
 
         cout << "\nНепогашенные ссуды:" << this->loans.size() << endl;
 
         for (int i = 0; i < loans.size(); i++) {
             this->loans[i].print();
+        }
+        SetConsoleTextAttribute(hConsole, 94);
+        cout << "\nСтроящиеся фабрики"<<endl;
+        for (int i = 0; i < fabricQueue.size(); i++) {
+            this->fabricQueue[i].print();
         }
 
 
@@ -392,11 +446,11 @@ public:
 
         this->printInfo();
         cout << "\nТЕКУЩИЙ РАУНД:" << Manager.getRound();
-        cout << "\n\nЗапрос на ЕСМ\n\n";
+        cout << "\n\nЗапрос на ЕСМ\n";
         cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от "
-             << Manager.getPrice_ESM();
+            << Manager.getPrice_ESM();
         cout << "\n доступные ЕГП для продажи банку: " << Manager.getAvailableEGP() << " шт. до "
-             << Manager.getPrice_EGP();
+            << Manager.getPrice_EGP();
 
         int player_esm_price;
         int player_esm_count;
@@ -430,9 +484,9 @@ public:
         int player_egp_price, player_egp_count;
         cout << "\n\nЗапрос на ЕГП\n\n";
         cout << "\n доступные ЕСМ для покупки: " << Manager.getAvailableESM() << " шт. от "
-             << Manager.getPrice_ESM();
+            << Manager.getPrice_ESM();
         cout << "\n доступные ЕГП для продажи банку: " << Manager.getAvailableEGP() << " шт. до "
-             << Manager.getPrice_EGP();
+            << Manager.getPrice_EGP();
 
         cout << "\n Введите цену (меньше " << Manager.getPrice_EGP() << "):";
         cin >> player_egp_price;
@@ -457,7 +511,7 @@ public:
                 }
 
             }
-                //если ввел другое
+            //если ввел другое
             else {
                 // пустой
                 Request ESMnewRequest = Request(this->id, 0, 0);
@@ -504,7 +558,7 @@ public:
                 }
 
             }
-                //обычный случай
+            //обычный случай
             else if (esmCount <= this->getEsm()) {
                 int playerDefFabs = this->getDefaultFabrics();
                 if (esmCount > playerDefFabs)
@@ -596,6 +650,86 @@ public:
     }
 
 
+    //Строим фабрики
+    void AddFabric(Fabric fab) {
+        if (fab.getType()=="Авто")
+        {
+            auto_fabric = auto_fabric + fab.getCount();
+        }
+        if (fab.getType() == "Обычная")
+        {
+            default_fabric = default_fabric + fab.getCount();
+        }
+    }
+    //Метод для второй части платежа и строительства фабрики
+    void checkBuilding(Bank Manager) {
+        string choice="";
+        for (int i = 0; i < fabricQueue.size(); i++) {
+
+            if (fabricQueue[i].getDate() == Manager.getRound())
+            {
+                cout << "Вам нужно заплатить вторую часть платежа за строительство фабрики:\nВведите 0 для подтверждения:\n";
+                cin >> choice;
+                if (fabricQueue[i].getType() == "Авто")
+                {
+                    money = money - fabricQueue[i].getCount() * 5000;
+                    AddFabric(fabricQueue[i]);
+                    //Удаление по индексу из очереди
+                    auto iter = fabricQueue.cbegin();
+                    fabricQueue.erase(iter + i);
+                }
+                if (fabricQueue[i].getType() == "Обычная")
+                {
+                    money = money - fabricQueue[i].getCount() * 2500;
+                    AddFabric(fabricQueue[i]);
+                    //Удаление по индексу из очереди
+                    auto iter = fabricQueue.cbegin();
+                    fabricQueue.erase(iter + i);
+                }
+
+            }
+        }
+
+    }
+    void makeFabricRequest(Bank Manager) {
+        cout << "\n" << "Выберите опцию:\n- 1 - для строительства АВТО фабрики ( 10 000 $ )"
+            << "\n- 2 - для заявки на строительство ОБЫЧНОЙ фабрики ( 5 000$ )\n- 3 - для модернизации одной из обычных фабрик в АВТО фабрику ( 7 000 $ )\n\nВведите: ";
+
+        int choice;
+        int counter;
+        cin >> choice;
+        system("cls");
+        printInfo();
+        if (choice == 2)
+        {
+
+            cout << "\nВы выбрали построить ОБЫЧНУЮ фабрику за 5 000$\nСколько вы хотите простроить?\n";
+            cin >> counter;
+
+            cout << "\nВы хотите построить " << counter << " фабрик за " << counter * 5000
+                << " $\nПервая половина (" << counter * 2500 << ") будет заплачена сейчас, а вторая за месяц перед постройкой";
+
+            fabricQueue.push_back(Fabric(id, "Обычная", counter, Manager.getRound() + 1));
+            //Первая половина платежа
+            money = money - counter * 2500;
+        }
+        if (choice == 1)
+        {
+            cout << "\nВы выбрали построить АВТО фабрику за 10 000$\nСколько вы хотите простроить?\n";
+            cin >> counter;
+            cout << "\nВы хотите построить " << counter << " фабрик за " << counter * 10000
+                <<" $\nПервая половина ("<< counter* 5000 << ") будет заплачена сейчас, а вторая за месяц перед постройкой";
+            fabricQueue.push_back(Fabric(id, "Авто", counter, Manager.getRound() + 7));
+            //Первая половина платежа
+            money = money - counter * 5000;
+
+        }
+        if (choice == 3)
+        {
+            cout << "\nВы выбрали МОДЕРНИЗИРОВАТЬ обычные фабрики";
+        }
+    }
+
 };
 
 
@@ -674,6 +808,7 @@ int main() {
 
             //текущий игрок
             Player p = players[j];
+
             // 3 есм покупка
             esmRequestList.push_back(p.buyESM(Manager));
             //4 егп производство
@@ -682,7 +817,7 @@ int main() {
             egpRequestList.push_back(p.sellEGP(Manager));
             //6 платим ссудный процент
             p.payLoanPercent();
-            //если срок то платим процент
+            //если срок то платим всю ссуду
             p.loanPayment(Manager.getRound());
             //7 берем ссудуу
             system("cls");
@@ -696,8 +831,14 @@ int main() {
                     p.addLoan(p.getLoanAmount(), Manager.getRound() + 12);
                 }
             }
-
+            system("cls");
             p.printInfo();
+
+
+            //Строительство и модернизация фабрик
+            p.checkBuilding(Manager);
+            p.makeFabricRequest(Manager);
+
 
             players[j] = p;
 
