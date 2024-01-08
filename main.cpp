@@ -417,7 +417,7 @@ public:
         cout << "\nЕСМ:" << this->esm << " ЕГП:" << this->egp
             << "\nАвто Фабрики:" << auto_fabric
             << "\nОбычные Фабрики:" << default_fabric
-            << "\n\nНалоги\nЕСМ: 300$" << "\nЕГП: 500$" << "\nОб.Фабрика: 1000$\nАвто.Фабрика: 1500$\n\n"
+            << "\n\nНалоги ЕСМ: 300$" << " ЕГП: 500$" << "\nОб.Фабрика: 1000$ Авто.Фабрика: 1500$\n"
 
             << "---------------------------\n";
 
@@ -438,6 +438,16 @@ public:
     }
     void displayResults() {
         cout << nickname << " " << money << "$ Капитал: " << getExampleCapital() << "$";
+    }
+
+    //для запроса данных о компании
+    void displayStats() {
+        cout << "\n№" << id << " " << nickname << " " << money << "$ ЕСМ: " << esm<<" шт. ЕГП: "<<egp<<" шт. Обычных фабрик: "<<default_fabric<<" Автоматических фабрик: "<<auto_fabric<<endl;
+        cout << "Ссуд: " << loans.size()<<"\nСтроительство:";
+        for (int i = 0; i < fabricQueue.size(); i++)
+        {
+            fabricQueue[i].print();
+        }
     }
 
 
@@ -709,7 +719,7 @@ public:
             cout << "\nВы хотите построить " << counter << " фабрик за " << counter * 5000
                 << " $\nПервая половина (" << counter * 2500 << ") будет заплачена сейчас, а вторая за месяц перед постройкой";
 
-            fabricQueue.push_back(Fabric(id, "Обычная", counter, Manager.getRound() + 1));
+            fabricQueue.push_back(Fabric(id, "Обычная", counter, Manager.getRound() + 5));
             //Первая половина платежа
             money = money - counter * 2500;
         }
@@ -726,7 +736,15 @@ public:
         }
         if (choice == 3)
         {
-            cout << "\nВы выбрали МОДЕРНИЗИРОВАТЬ обычные фабрики";
+            cout << "\nВы выбрали МОДЕРНИЗИРОВАТЬ обычную фабрику за 7 000$\n";
+            cout << "Введите количество ОБЫЧНЫХ ФАБРИК для автоматизации:";
+            cin >> counter;
+            cout << "Вы модернизируете " << counter << " фабрик за " << counter * 7000<<"$";
+            fabricQueue.push_back(Fabric(id, "Авто", counter, Manager.getRound() + 9));
+
+            //Первая половина платежа 2500 т.к мы во второй половине снимем 5000
+            money = money - counter * 2500;
+            default_fabric = default_fabric - counter;
         }
     }
 
@@ -773,7 +791,7 @@ int main() {
     //СОздание других
     const int BOT_COUNT = 2;
     for (int i = 0; i < BOT_COUNT; i++) {
-        string arr[BOT_COUNT] = { "Фаррел Корпорейтед", "Арасака Индастриз" };
+        string arr[BOT_COUNT] = { "Милитек", "Арасака Индастриз" };
         players.emplace_back(Player(i + 1, arr[i]));
     }
     //    for (int i = 0; i < players.size(); i++) {
@@ -809,6 +827,9 @@ int main() {
             //текущий игрок
             Player p = players[j];
 
+
+
+
             // 3 есм покупка
             esmRequestList.push_back(p.buyESM(Manager));
             //4 егп производство
@@ -820,6 +841,25 @@ int main() {
             //если срок то платим всю ссуду
             p.loanPayment(Manager.getRound());
             //7 берем ссудуу
+            system("cls");
+            p.printInfo();
+            SetConsoleTextAttribute(hConsole, 8);
+            cout << "\nУ вас есть возможность посмотреть данные о ваших конкурентах\nНажмите 1 для получения данных:\n";
+            string datashow;
+            cin >> datashow;
+            if (datashow == "1")
+            {
+                for (int i = 0; i < players.size(); i++)
+                {
+                    SetConsoleTextAttribute(hConsole, 4);
+                    cout << "\n\n";
+                    players[i].displayStats();
+
+                }
+                cout << "\nВведите любой символ для перехода к следующему действию: ";
+                cin >> datashow;
+
+            }
             system("cls");
             p.printInfo();
             cout << "Взять ссуду в размере " << p.getLoanAmount() << "$ и получить их на счет?\n0 для подтверждения\n";
@@ -898,7 +938,7 @@ int main() {
 
 
         system("cls");
-        cout << "\n-----\nВ конце месяца плата налогов\n------\n";
+        cout << "\n-----\nВ конце месяца "<<Manager.getRound() <<" плата налогов\n------\n";
         for (Player p : players) {
             cout << "\n\n налоги: ";
             p.payTaxes();
